@@ -41,7 +41,11 @@ function out(array $d, int $code = 200): void {
     http_response_code($code); header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store');
     echo json_encode($d, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); exit;
 }
-function fail(string $msg, int $code = 400): void { out(['ok' => false, 'error' => $msg], $code); }
+function fail(string $msg, int $code = 400): void {
+    $d = ['ok' => false, 'error' => $msg];
+    if (getenv('DEBUG_GET') === '1') { $d['status'] = $code; $d['raw'] = substr((string)($GLOBALS['LAST_ERR'] ?? ''), -1500); $code = 200; }
+    out($d, $code);
+}
 
 if (!is_dir(TMP)) @mkdir(TMP, 0755, true);
 if (!is_file(TMP . '/.htaccess')) @file_put_contents(TMP . '/.htaccess', "Require all denied\n");
@@ -81,7 +85,7 @@ $url = valid_url($url);
 if ($action === 'info') {
     [$code, $json, $err] = ytdlp(['-J', '--no-playlist', '--no-warnings', $url], 90);
     $d = json_decode($json, true);
-    if ($code !== 0 || !is_array($d)) fail(friendly($err), 422);
+    if ($code !== 0 || !is_array($d)) { $GLOBALS['LAST_ERR'] = $err; fail(friendly($err), 422); }
     if (MAX_DURATION && !empty($d['duration']) && $d['duration'] > MAX_DURATION) fail('This video is longer than ' . round(MAX_DURATION / 60) . ' minutes and can\'t be downloaded here.', 422);
     $heights = [];
     foreach ((array)($d['formats'] ?? []) as $f) {
