@@ -71,6 +71,7 @@ if ($action === 'file') {
     exit;
 }
 
+if ($action === 'selftest_result' && getenv('DEBUG_GET') === '1') { out(json_decode((string)@file_get_contents(TMP . '/selftest.json'), true) ?: ['pending' => true]); }
 if ($action === 'selftest' && getenv('DEBUG_GET') === '1') {
     $tests = ['youtube' => 'https://www.youtube.com/watch?v=jNQXAC9IVRw', 'vimeo' => 'https://vimeo.com/76979871',
               'facebook' => 'https://www.facebook.com/facebook/videos/10153231379946729/', 'tiktok' => 'https://www.tiktok.com/@scout2015/video/6718335390845095173'];
@@ -80,6 +81,7 @@ if ($action === 'selftest' && getenv('DEBUG_GET') === '1') {
         $d = json_decode($j, true);
         $res[$k] = $c === 0 && is_array($d) ? ['ok' => true, 'title' => $d['title'] ?? '', 'max_height' => max(array_map(fn($f) => (int)($f['height'] ?? 0), (array)($d['formats'] ?? [['height' => 0]])))] : ['ok' => false, 'err' => substr(trim($e), -300)];
     }
+    @file_put_contents(TMP . '/selftest.json', json_encode($res));
     out($res);
 }
 if ($action === 'health') {
