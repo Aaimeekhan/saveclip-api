@@ -67,7 +67,11 @@ if ($action === 'file') {
     exit;
 }
 
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') fail('Method not allowed', 405);
+if ($action === 'health') {
+    [$c, $v] = ytdlp(['--version'], 20);
+    out(['ok' => $c === 0, 'yt_dlp' => trim($v), 'ffmpeg' => is_file(FFMPEG_DIR . '/ffmpeg')]);
+}
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' && getenv('DEBUG_GET') !== '1') fail('Method not allowed', 405);
 rate_limit();
 
 $url = trim((string)($_POST['url'] ?? ''));
