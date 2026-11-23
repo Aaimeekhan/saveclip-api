@@ -1,4 +1,5 @@
 FROM php:8.3-apache
+COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg python3 ca-certificates curl \
  && curl -fsSL https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
  && chmod a+rx /usr/local/bin/yt-dlp && apt-get clean && rm -rf /var/lib/apt/lists/*
