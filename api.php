@@ -71,6 +71,17 @@ if ($action === 'file') {
     exit;
 }
 
+if ($action === 'selftest' && getenv('DEBUG_GET') === '1') {
+    $tests = ['youtube' => 'https://www.youtube.com/watch?v=jNQXAC9IVRw', 'vimeo' => 'https://vimeo.com/76979871',
+              'facebook' => 'https://www.facebook.com/facebook/videos/10153231379946729/', 'tiktok' => 'https://www.tiktok.com/@scout2015/video/6718335390845095173'];
+    $res = [];
+    foreach ($tests as $k => $u) {
+        [$c, $j, $e] = ytdlp(['-J', '--no-playlist', '--no-warnings', $u], 60);
+        $d = json_decode($j, true);
+        $res[$k] = $c === 0 && is_array($d) ? ['ok' => true, 'title' => $d['title'] ?? '', 'max_height' => max(array_map(fn($f) => (int)($f['height'] ?? 0), (array)($d['formats'] ?? [['height' => 0]])))] : ['ok' => false, 'err' => substr(trim($e), -300)];
+    }
+    out($res);
+}
 if ($action === 'health') {
     [$c, $v] = ytdlp(['--version'], 20);
     out(['ok' => $c === 0, 'yt_dlp' => trim($v), 'ffmpeg' => is_file(FFMPEG_DIR . '/ffmpeg')]);
