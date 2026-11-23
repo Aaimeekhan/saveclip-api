@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: saveclip-api
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://iamirsaleem.com,https://www.iamirsaleem.com
+      - key: RATE_LIMIT
+        value: "30"
+      - key: MAX_DURATION
+        value: "3600"
